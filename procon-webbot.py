@@ -34,12 +34,12 @@ def login(username, password):
     elem.click()
 
 
-def generate_id(key, day_of_month):
-    return f'{key}_{day_of_month - 1}'
+def generate_id(key, day):
+    return f'{key}_{day - 1}'
 
 
-def enter_value_in_cell(day_of_month, key, value):
-    elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(key, day_of_month))))
+def enter_value_in_cell(day, key, value):
+    elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(key, day))))
     if not elem.text:
         elem.click()
         elem = wait.until(EC.presence_of_element_located((By.ID, 'editCell')))
@@ -50,18 +50,18 @@ def enter_value_in_cell(day_of_month, key, value):
         return None
 
 
-def enter_day(day_of_month, start, end, pause):
-    if enter_value_in_cell(day_of_month, 'lnStart', start):
-        enter_value_in_cell(day_of_month, 'lnEnde', end)
-        enter_value_in_cell(day_of_month, 'lnPause', pause)
+def enter_day(day, start, end, pause):
+    if enter_value_in_cell(day, 'lnStart', start):
+        enter_value_in_cell(day, 'lnEnde', end)
+        enter_value_in_cell(day, 'lnPause', pause)
 
-        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(costcenter_line, day_of_month))))
+        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(costcenter_line, day))))
         elem.click()
 
-        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id('lnDiff', day_of_month))))
+        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id('lnDiff', day))))
         diff_time = elem.text
 
-        enter_value_in_cell(day_of_month, costcenter_line, diff_time)
+        enter_value_in_cell(day, costcenter_line, diff_time)
 
         steal_focus()
 
