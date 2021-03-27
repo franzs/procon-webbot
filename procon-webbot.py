@@ -2,11 +2,11 @@
 
 import argparse
 import csv
-import datetime
 import os
 import re
 import sys
 
+from datetime import datetime
 from shutil import copy2
 
 from selenium import webdriver
@@ -95,7 +95,7 @@ args = parser.parse_args()
 if not os.environ.get('PROCON_USERNAME') or not os.environ.get('PROCON_PASSWORD'):
     exit("Set environment variables PROCON_USERNAME and PROCON_PASSWORD.")
 
-now = datetime.datetime.now()
+now = datetime.now()
 
 profile = webdriver.FirefoxProfile()
 
@@ -133,7 +133,7 @@ with open(args.filename, newline='') as csvfile:
         if not re.search(r'^\d+', row[args.column_name_date]):
             break
 
-        date = datetime.datetime.strptime(row[args.column_name_date], '%d.%m.%Y')
+        date = datetime.strptime(row[args.column_name_date], '%d.%m.%Y')
 
         if date.month != now.month or date.year != now.year:
             print(f"row {row} is not in current month. Ignoring.", file=sys.stderr)
