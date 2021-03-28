@@ -15,6 +15,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
+DEFAULT_CSV_FORMAT_DATE = '%d.%m.%Y'
+DEFAULT_CSV_FORMAT_TIME = '%H:%M'
+DEFAULT_CSV_DELIMITER = ';'
+DEFAULT_CSV_QUOTE_CHAR = '"'
+
+PROCON_FORMAT_TIME = '%H:%M'
+
 CERT_DB = 'nss/cert9.db'
 
 
@@ -34,34 +41,37 @@ def login(username, password):
     elem.click()
 
 
-def generate_id(key, day):
-    return f'{key}_{day - 1}'
+def generate_id(key, date):
+    return f'{key}_{date.day - 1}'
 
 
-def enter_value_in_cell(day, key, value):
-    elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(key, day))))
+def enter_value_in_cell(date, key, value):
+    elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(key, date))))
     if not elem.text:
         elem.click()
         elem = wait.until(EC.presence_of_element_located((By.ID, 'editCell')))
-        elem.send_keys(value)
+        if isinstance(value, str):
+            elem.send_keys(value)
+        else:
+            elem.send_keys(value.strftime(PROCON_FORMAT_TIME))
 
         return elem
     else:
         return None
 
 
-def enter_day(day, start, end, pause):
-    if enter_value_in_cell(day, 'lnStart', start):
-        enter_value_in_cell(day, 'lnEnde', end)
-        enter_value_in_cell(day, 'lnPause', pause)
+def enter_day(date, start, end, pause):
+    if enter_value_in_cell(date, 'lnStart', start):
+        enter_value_in_cell(date, 'lnEnde', end)
+        enter_value_in_cell(date, 'lnPause', pause)
 
-        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(costcenter_line, day))))
+        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id(costcenter_line, date))))
         elem.click()
 
-        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id('lnDiff', day))))
+        elem = wait.until(EC.presence_of_element_located((By.ID, generate_id('lnDiff', date))))
         diff_time = elem.text
 
-        enter_value_in_cell(day, costcenter_line, diff_time)
+        enter_value_in_cell(date, costcenter_line, diff_time)
 
         steal_focus()
 
@@ -87,8 +97,10 @@ parser.add_argument('--column-name-date',  **argument_options('PROCON_COLUMN_NAM
 parser.add_argument('--column-name-start', **argument_options('PROCON_COLUMN_NAME_START'))
 parser.add_argument('--column-name-end',   **argument_options('PROCON_COLUMN_NAME_END'))
 parser.add_argument('--column-name-pause', **argument_options('PROCON_COLUMN_NAME_PAUSE'))
-parser.add_argument('--csv-delimiter',     **argument_options('PROCON_CSV_DELIMITER', ';'))
-parser.add_argument('--csv-quote-char',    **argument_options('PROCON_CSV_QUOTE_CHAR', '"'))
+parser.add_argument('--csv-format-date',   **argument_options('PROCON_CSV_FORMAT_DATE', DEFAULT_CSV_FORMAT_DATE))
+parser.add_argument('--csv-format-time',   **argument_options('PROCON_CSV_FORMAT_TIME', DEFAULT_CSV_FORMAT_TIME))
+parser.add_argument('--csv-delimiter',     **argument_options('PROCON_CSV_DELIMITER', DEFAULT_CSV_DELIMITER))
+parser.add_argument('--csv-quote-char',    **argument_options('PROCON_CSV_QUOTE_CHAR', DEFAULT_CSV_QUOTE_CHAR))
 
 args = parser.parse_args()
 
@@ -133,12 +145,15 @@ with open(args.filename, newline='') as csvfile:
         if not re.search(r'^\d+', row[args.column_name_date]):
             break
 
-        date = datetime.strptime(row[args.column_name_date], '%d.%m.%Y')
+        date  = datetime.strptime(row[args.column_name_date],  args.csv_format_date)
+        start = datetime.strptime(row[args.column_name_start], args.csv_format_time)
+        end   = datetime.strptime(row[args.column_name_end],   args.csv_format_time)
+        pause = datetime.strptime(row[args.column_name_pause], args.csv_format_time)
 
         if date.month != now.month or date.year != now.year:
             print(f"row {row} is not in current month. Ignoring.", file=sys.stderr)
             continue
 
-        enter_day(date.day, row[args.column_name_start], row[args.column_name_end], row[args.column_name_pause])
+        enter_day(date, start, end, pause)
 
 driver.close()
