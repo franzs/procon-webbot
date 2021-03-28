@@ -4,7 +4,7 @@ Webbot for entering timesheets from CSV to ProCon using [Selenium](https://www.s
 
 ## Limitations
 
-At the moment it is possible to enter a timesheet for the current month, only. Furthermore it is not possible to devide the hours into several units. The working time is copied to a fixed unit.
+At the moment it is possible to enter a timesheet for the current month, only. Furthermore it is not possible to divide the hours into several units. The working time is copied to a fixed unit.
 
 Only Firefox is supported.
 
@@ -12,7 +12,7 @@ Only Firefox is supported.
 
 ### Webdriver for Selenium
 
-Download [geckodriver](https://github.com/mozilla/geckodriver/releases) and install it for you operating system.
+Download [geckodriver](https://github.com/mozilla/geckodriver/releases) and install it for your operating system.
 
 ### Python packages
 
@@ -75,7 +75,7 @@ export PROCON_COLUMN_NAME_END="Aus"
 export PROCON_COLUMN_NAME_PAUSE="Pause"
 ```
 
-FInally you can execute the webbot:
+Finally you can execute the webbot:
 
 ```bash
 ./procon-webbot.py timesheet.csv
